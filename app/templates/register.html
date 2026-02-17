@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ t('register.title') }} - {{ t('site.title') }}{% endblock %}
+{% block content %}
+<div class="auth-screen">
+    <div class="logo-box small">
+        <div class="logo-face">( ◕ ω ◕ )</div>
+        <div class="logo-title">{{ t('site.title') }}</div>
+    </div>
+
+    <div class="terminal-box auth-box">
+        <div class="box-header">{{ t('register.submit') }}</div>
+        <div class="box-content">
+            <p class="npc-speech">"{{ t('register.greeting') }}"</p>
+
+            <form method="POST" action="{{ url_for('auth.register') }}">
+                <div class="form-group">
+                    <label class="terminal-label">▶ {{ t('register.username') }}:</label>
+                    <input type="text" name="username" id="reg-username" class="terminal-input"
+                        placeholder="{{ t('login.username') }}" required minlength="2" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="terminal-label">▶ {{ t('register.password') }}:</label>
+                    <input type="password" name="password" id="reg-password" class="terminal-input"
+                        placeholder="{{ t('login.password') }}" required minlength="4">
+                </div>
+                <div class="form-group">
+                    <label class="terminal-label">▶ {{ t('register.password_confirm') }}:</label>
+                    <input type="password" name="password2" id="reg-password2" class="terminal-input"
+                        placeholder="{{ t('register.password_confirm') }}" required minlength="4">
+                </div>
+                <div class="form-group">
+                    <label class="terminal-label">▶ 🏕️ {{ t('register.park_name') }}:</label>
+                    <input type="text" name="park_name" id="reg-parkname" class="terminal-input"
+                        placeholder="{{ t('register.park_name') }}" required minlength="2" maxlength="30">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="terminal-btn btn-primary" id="btn-register">
+                        {{ t('register.submit') }}
+                    </button>
+                    <a href="{{ url_for('auth.login') }}" class="terminal-btn btn-secondary" id="btn-login-link">
+                        {{ t('register.to_login') }}
+                    </a>
+                </div>
+            </form>
+
+            <p class="npc-speech bottom-speech">"{{ t('register.initial_info') }}"</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

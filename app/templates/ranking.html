@@ -1,0 +1,103 @@
+# -*- coding: utf-8 -*-
+"""
+실장석 공원 제국 - 랭킹 페이지 (ranking.html)
+[v0.3.0] 전투력/인구/승률 기반 공원 순위 표시.
+"""
+{% extends "base.html" %}
+{% block title %}{{ t('ranking.title') }} - {{ t('site.title') }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header-row">
+        <span>{{ t('ranking.title') }}</span>
+        <span>
+            <a href="{{ url_for('game.dashboard') }}" class="terminal-link">← {{ t('nav.dashboard') }}</a>
+        </span>
+    </div>
+
+    {# 랭킹 탭 #}
+    <div class="terminal-box" style="margin-bottom: 12px;">
+        <div class="box-content" style="display: flex; gap: 8px;">
+            <a href="{{ url_for('game.ranking', sort='power') }}"
+                class="terminal-btn {% if sort_by == 'power' %}btn-active{% endif %}">{{ t('ranking.sort.power') }}</a>
+            <a href="{{ url_for('game.ranking', sort='population') }}"
+                class="terminal-btn {% if sort_by == 'population' %}btn-active{% endif %}">{{
+                t('ranking.sort.population') }}</a>
+            <a href="{{ url_for('game.ranking', sort='wins') }}"
+                class="terminal-btn {% if sort_by == 'wins' %}btn-active{% endif %}">{{ t('ranking.sort.wins') }}</a>
+            <a href="{{ url_for('game.ranking', sort='resources') }}"
+                class="terminal-btn {% if sort_by == 'resources' %}btn-active{% endif %}">{{ t('ranking.sort.resources')
+                }}</a>
+        </div>
+    </div>
+
+    {# 랭킹 테이블 #}
+    <div class="terminal-box">
+        <div class="box-header">📊 {{ sort_label }}</div>
+        <div class="box-content">
+            <table class="park-table ranking-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{{ t('ranking.park_name') }}</th>
+                        <th>{{ t('parks.personality') }}</th>
+                        <th>{{ t('ranking.sort.power') }}</th>
+                        <th>{{ t('ranking.sort.population') }}</th>
+                        <th>{{ t('ranking.sort.wins') }}</th>
+                        <th>{{ t('dash.total_np') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in rankings %}
+                    <tr
+                        class="{% if item.park.id == my_park_id %}my-park-row{% elif item.park.is_npc %}npc-row{% endif %}">
+                        <td class="rank-col">
+                            {% if loop.index == 1 %}🥇
+                            {% elif loop.index == 2 %}🥈
+                            {% elif loop.index == 3 %}🥉
+                            {% else %}{{ loop.index }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ item.park.name }}
+                            {% if item.park.id == my_park_id %}<span class="my-badge">★ {{ t('ranking.my_park')
+                                }}</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if item.park.is_npc %}
+                            <span class="npc-personality personality-{{ item.park.npc_personality }}">
+                                {{ item.personality_emoji }} {{ item.park.npc_personality }}
+                            </span>
+                            {% else %}
+                            <span class="player-badge">👑 {{ t('parks.player') }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="num-col">{{ item.park.total_combat_power }}</td>
+                        <td class="num-col">{{ item.park.total_population }}</td>
+                        <td class="num-col">
+                            <span class="win-count">{{ item.wins }}</span>
+                            /
+                            <span class="lose-count">{{ item.losses }}</span>
+                        </td>
+                        <td class="num-col">{{ item.park.total_np_available }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# 내 공원 요약 #}
+    <div class="terminal-box" style="margin-top: 12px;">
+        <div class="box-header">📍 {{ t('ranking.my_summary') }}</div>
+        <div class="box-content">
+            <div class="stat-line">{{ t('ranking.sort.power') }}: <strong>{{ my_power_rank }}</strong> / {{ total_parks
+                }}</div>
+            <div class="stat-line">{{ t('ranking.sort.population') }}: <strong>{{ my_pop_rank }}</strong> / {{
+                total_parks }}</div>
+            <div class="stat-line">{{ t('ranking.sort.wins') }}: <strong class="win-count">{{ my_wins }}</strong> /
+                <strong class="lose-count">{{ my_losses }}</strong></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

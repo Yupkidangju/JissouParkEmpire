@@ -1,0 +1,326 @@
+{
+    "GATHER_DEPART": {
+        "adult": [
+            "Going to find konpeito desu! Look forward to it desu!",
+            "I'll bring lots today desu! For Lady desu!",
+            "Rummaging through trash cans desu... Thank you humans desu~",
+            "Outside is scary desu... But for food desu!",
+            "I hope there are no crows desu... Scary desu..."
+        ],
+        "child": [
+            "I'll help too techu! Wait for me mama techu!",
+            "Onecha, let's go together techu~ Not scary techu!",
+            "Konpeito... Is it sweet techu? I wanna find it techu~",
+            "I can do it techu! Praise me techu!"
+        ]
+    },
+    "GATHER_SUCCESS_BIG": [
+        "🌿 Gathering was a huge success desu!! Brought lots desu!!"
+    ],
+    "GATHER_SUCCESS_SMALL": "🌿 Gathering complete desu. At least we found something desu.",
+    "GATHER_KONPEITO_FOUND": [
+        "🍬 Found konpeito desu!! It's sparkling desu!!"
+    ],
+    "GATHER_EVT_PREDATOR": [
+        "🐦 A crow appeared desu!! The child was taken desu!!",
+        "👶 Hieee!! Scary bird!! Scary techu!!"
+    ],
+    "GATHER_EVT_WILDLING": [
+        "🧑 Found a wild jissou desu!! Brought them back desu!",
+        "👶 Was crying alone techu... I'll come along techu..."
+    ],
+    "GATHER_EVT_JACKPOT": [
+        "🗑️ Jackpot!!! The trash can is overflowing with food desu!!",
+        "🗑️ Expired food from the human market desu! Looks delicious desu!!"
+    ],
+    "BUILD_START": {
+        "cardboard_house": [
+            "🏠 Starting to build a cardboard house desu! More room desu!",
+            "🧑 Building a house desu! Everyone help desu!"
+        ],
+        "unchi_hole": [
+            "🕳️ Digging an unchi hole desu! To raise babies desu!",
+            "🧑 Digging a hole desu... Stinky desu... But needed desu!"
+        ],
+        "storage_hole": [
+            "📦 Making a storage hole desu! Store more stuff desu!",
+            "🧑 Digging into the ground for storage desu!"
+        ],
+        "wall": [
+            "🧱 Building a wall desu! Enemies can't get in desu!!",
+            "🧑 A wall to protect our Lady desu!"
+        ],
+        "watchtower": [
+            "🗼 Building a watchtower desu! Can see far away desu!",
+            "🧑 Watching for enemies from high up desu!"
+        ],
+        "default": [
+            "🔨 Construction starting desu! Working hard desu!"
+        ]
+    },
+    "BUILD_COMPLETE": [
+        "🔨 Complete!! Splendidly done desu!! Look, Boss desu!!",
+        "🔨 All built desu! Park's even better now desu!!"
+    ],
+    "BIRTH_NORMAL": [
+        "🐣 A baby was born desu!! So cute desu!!",
+        "🐣 New life desu! The park prospers desu!"
+    ],
+    "BIRTH_WITH_BABY": [
+        "🐛 A refu was born too desu! Put it in the unchi hole desu!"
+    ],
+    "BIRTH_MANY": [
+        "🐣 Many were born desu!! Bumper crop desu!! Worried about food desu...!"
+    ],
+    "CULL_BABY_VICTIM": [
+        "🐛 Refu...? Refuu...? Mama...? Refuuu...!!",
+        "🐛 Refu!! Refuu!! (squirming)",
+        "🐛 ...Refu... (wriggling)",
+        "🐛 Refuuu!! Noooo refuu!!"
+    ],
+    "CULL_BABY_EXECUTOR": [
+        "🧑 Refus have many uses desu... Eating is best desu.",
+        "🧑 For everyone's sake desu... Can't be helped desu.",
+        "🧑 Nom nom desu... Taste is so-so desu..."
+    ],
+    "CULL_BABY_TO_MAT": [
+        "🐛 Refu...? (being dragged away)",
+        "🧑 Useful for building houses desu! Very handy desu!"
+    ],
+    "CULL_CHILD_VICTIM": [
+        "👶 Mama! Mama! You can't eat me techu!! Can't techu!!",
+        "👶 Mama! Don't eat your child techu! Don't techu!!",
+        "👶 No techu! No techu!! I'm a good kid techu!!",
+        "👶 Why techu...? What did I do wrong techu...? Mama... techu...",
+        "👶 Running away techu! Run... Ah! Don't catch me...techu...!!",
+        "👶 Onecha! Help me techu!! Mama is scary techu!!"
+    ],
+    "CULL_CHILD_EXECUTOR": [
+        "🧑 Can always birth more desu! ...desu...",
+        "🧑 For the park desu... Sorry desu...",
+        "🧑 If hungry, we die desu. Must eat to live desu...",
+        "🧑 Don't cry desu... It'll be over soon desu...",
+        "🧑 ... (silently processing desu)"
+    ],
+    "CULL_CHILD_TO_MAT": [
+        "👶 Mama! Where are we going techu? Scary place techu?",
+        "🧑 ...Can't be helped for building desu. Must forget desu."
+    ],
+    "BATTLE_DEPART": {
+        "guard": [
+            "⚔️ Guard jissou, deploying desu!! I'll stomp everything desu!!",
+            "⚔️ Going to steal enemy konpeito desu!! Charge!",
+            "⚔️ Nobody can stop us desu!! We're the strongest desu!!"
+        ],
+        "adult": [
+            "🧑 Just adults... will we be okay desu? Scary desu...",
+            "🧑 Even without guards, we can do it desu! Probably... desu...",
+            "🧑 Let's go desu!! For the konpeito!"
+        ]
+    },
+    "BATTLE_WIN": [
+        "⚔️ We won desu!! Tons of loot desu!!",
+        "⚔️ They were weak desu! Easy peasy desu!",
+        "⚔️ Konpeito raid success desu!! Feels great desu!!",
+        "⚔️ Boss! Great victory desu!! Great victory!!"
+    ],
+    "BATTLE_WIN_CAPTURED_CHILD": [
+        "👶 Captured enemy children techu! New workers desu!",
+        "👶 Hieee... Where... is this techu...?",
+        "🧑 Brought enemy children as prisoners desu! They're ours now desu!"
+    ],
+    "BATTLE_LOSE": [
+        "⚔️ Lost desu... They were stronger than expected desu...",
+        "⚔️ Waaah... Got hit desu... It hurts desu...",
+        "⚔️ Ran away desu... So embarrassing desu...",
+        "⚔️ Next time I'll win for sure desu... Revenge desu!!"
+    ],
+    "BATTLE_DEFEND_WIN": [
+        "🛡️ Defended successfully desu!! The walls held desu!!",
+        "🛡️ How dare they!! Thinking they could invade our park desu!",
+        "🛡️ Thanks to the guard jissou desu!! Training paid off desu!"
+    ],
+    "BATTLE_DEFEND_LOSE": [
+        "🧑 P-please spare us desu!! They stole our konpeito desu!!",
+        "🧑 Cardboard house got destroyed desu... Cold desu...",
+        "👶 Scary techu!! Onecha got taken techu!!",
+        "🐛 Refuuu!! (being dragged away)"
+    ],
+    "FOOD_KONPEITO": [
+        "🧑 It's konpeito desu!! So sweet, so happy desu~♪",
+        "👶 Sweet techu~ Yummy techu~♪ Happy techu~♪",
+        "🧑 Konpeito is the best desu! So energizing desu!"
+    ],
+    "FOOD_TRASH_ONLY": [
+        "🧑 Trash again desu... Want konpeito desu...",
+        "🧑 Taste bad desu... Mouth feels gross desu... Konpeito...",
+        "👶 Taste bad techu... Mama, no sweets techu?"
+    ],
+    "FOOD_STARVING": [
+        "🧑 So hungry desu... No food desu... Dying desu...",
+        "👶 Mama... Hungry techu... Give me something techu...",
+        "🐛 Re...fu... (moving slower desu)",
+        "🧑 ...Must eat refus desu... Can't be helped desu..."
+    ],
+    "FOOD_DEATH": [
+        "🧑 Child starved... Got cold desu... Sorry desu...",
+        "👶 Mama... Hun...gry... te...chu...",
+        "🐛 ... (not moving anymore desu)"
+    ],
+    "OVERCROWDED": [
+        "🧑 Too cramped desu! Getting squished desu! Build more houses desu!!",
+        "👶 No room for me techu! Getting stepped on techu!!",
+        "🧑 A fight broke out desu! Fighting over spots desu!"
+    ],
+    "TRAIN_START": [
+        "🧑 I'll get strong desu!! Nobody can beat me desu!!",
+        "🧑 Hard desu... But not giving up desu!"
+    ],
+    "TRAIN_SUCCESS": [
+        "⚔️ Got stronger desu!! Nobody can match me desu!! Hahaha!",
+        "⚔️ I'm a guard jissou now desu!! Protecting the park desu!!"
+    ],
+    "TRAIN_FAIL": [
+        "🧑 Waaah... Failed desu... Still have a long way desu...",
+        "🧑 Not strong enough desu... Trying again desu!"
+    ],
+    "NPC_DIALOGUE": {
+        "aggressive": [
+            "Weak ones should be stomped desu! Hehehe!",
+            "Stealing konpeito is the fastest way desu!!",
+            "I'll crush that park desu!! Bring everything desu!!"
+        ],
+        "defensive": [
+            "Our park is impenetrable desu! Strong desu!",
+            "Make the walls thicker desu!! Iron defense desu!!",
+            "No matter who comes, we'll hold desu! This park is ours desu!"
+        ],
+        "peaceful": [
+            "Fighting is bad desu... Let's just eat konpeito desu~",
+            "Peaceful day desu~ Refus are growing well desu~",
+            "Wish everyone could share konpeito friendly-like desu..."
+        ],
+        "cunning": [
+            "That park looks weak desu... Heheheh...",
+            "Don't fight the strong, just bully the weak desu...",
+            "Patience for now desu... Waiting for opportunity desu..."
+        ],
+        "berserk": [
+            "Stomp everything in sight desuAAA!!",
+            "Don't need konpeito desu! Stomping is fun desu!!",
+            "Sitting still is boring desu!! Destroy everything desu!!"
+        ]
+    },
+    "DASHBOARD_GREETING": [
+        "Welcome back desu! I'll report the park status desu!",
+        "Welcome Boss desu! Working hard today too desu!",
+        "You're back desu! Park is safe desu!",
+        "Protected the park while Boss was away desu! Praise me desu!"
+    ],
+    "DISASTER_RAIN": [
+        "🌧️ Rain is pouring desu!! Cardboard house is melting desu!!",
+        "🌧️ Heavy rain desu!! House collapsed desu!!"
+    ],
+    "DISASTER_COLD": [
+        "❄️ So cold desu!! Refus stopped moving desu...",
+        "❄️ Cold wave desu!! Children are shivering desu..."
+    ],
+    "DISASTER_PESTICIDE": [
+        "☠️ Poisonous smell desu!! Humans sprayed poison desu!!",
+        "☠️ Pesticide desu!! Unchi hole wiped out... Bad humans desu!!"
+    ],
+    "DISASTER_RATS": [
+        "🐀 Rat swarm desu!! Eating all the stored food desu!!",
+        "🐀 Sewer rats stole the food desu!"
+    ],
+    "DISASTER_CAT": [
+        "🐱 A cat desu!! Run desu!! Child got caught desu!!",
+        "🐱 Taken by a cat desu!! Help desu!!"
+    ],
+    "DISASTER_DUMP_REMOVAL": [
+        "🚛 Humans removed the trash cans desu!! No more food desu!!",
+        "🚛 Dumpster is gone desu... Where do we find food desu..."
+    ],
+    "BIRTH_DEFORM": [
+        "🐣💀 Deformed desu... Pitiful but... Can't be helped desu..."
+    ],
+    "BIRTH_STILLBORN": [
+        "🐣💀 Stillborn desu... Wasted food desu... Sad desu..."
+    ],
+    "BIRTH_MASSIVE": [
+        "🐣🐣🐣 So many were born desu!! Can we feed them all desu...!"
+    ],
+    "BIRTH_MOTHER_DEATH": [
+        "🐣💀 During birth... Mama... ran out of strength... Mamaaaa!! Techuuu!!"
+    ],
+    "BIRTH_CANNIBALISM_EVENT": [
+        "🐣🩸 Hungry adult... ate the newborn child... desu..."
+    ],
+    "CANNIBALISM_AUTO_BABY": [
+        "🩸 No food... Eating refus desu... To survive desu...",
+        "🩸 So hungry... Only refus left desu... Can't be helped desu..."
+    ],
+    "CANNIBALISM_AUTO_CHILD": [
+        "🩸 Even children... Must eat desu... Tears falling desu..."
+    ],
+    "CANNIBALISM_GUARD_PREDATION": [
+        "🩸⚔️ Guard said they're hungry and ate the children desu!!"
+    ],
+    "CANNIBALISM_WITNESS": [
+        "😱 Others saw the feeding desu... Trembling in fear desu..."
+    ],
+    "DISEASE_OUTBREAK": [
+        "🤢 Disease is spreading desu!! Refus turning strange colors desu!!"
+    ],
+    "DISEASE_PROGRESS": [
+        "🤢 Disease won't heal desu... Refus keep dying desu..."
+    ],
+    "DISEASE_CURED": [
+        "💊 Konpeito's power cured the disease desu!! Magic konpeito desu!!"
+    ],
+    "HUMAN_ABUSER": [
+        "😈 Bad human came desu!! Taking the children desu!!"
+    ],
+    "HUMAN_EXPERIMENT": [
+        "🔬 Human in white coat took adults away desu... Laboratory... Scary desu..."
+    ],
+    "HUMAN_KIDS": [
+        "👦💦 Human kids splashed water on our house desu!! House is wet desu!!"
+    ],
+    "HUMAN_KINDNESS": [
+        "😇 Kind human left konpeito for us desu!! Thank you desu!!"
+    ],
+    "HUMAN_PETSHOP": [
+        "🏪 Human picked pretty children and took them away desu..."
+    ],
+    "SPY_DEPART": [
+        "🕵️ Sending a spy desu... Be careful desu..."
+    ],
+    "SPY_SUCCESS": [
+        "🕵️✅ Spy returned desu!! Sabotage success desu!!"
+    ],
+    "SPY_DETECTED": [
+        "🕵️❌ Spy was caught desu!! Executed by enemy desu..."
+    ],
+    "SPY_ENEMY_DETECTED": [
+        "🕵️🔍 Spotted enemy spy from watchtower desu!! Caught and stomped desu!!"
+    ],
+    "REBELLION_DESERTION": [
+        "🏃 Children deserted desu!! Ran away because hungry and scared desu!!"
+    ],
+    "REBELLION_STRIKE": [
+        "✊ Adults aren't working desu!! Strike desu!!"
+    ],
+    "REBELLION_GUARD_COUP": [
+        "⚔️💀 Guards started a rebellion desu!! Attacking the Boss desu!!"
+    ],
+    "ADDICTION_ONSET": [
+        "🍬😵 Konpeito addiction desu!! Can only eat sweet things desu!!"
+    ],
+    "ADDICTION_WITHDRAWAL": [
+        "🍬😰 No konpeito desu... Can't take it desu... Body trembling desu..."
+    ],
+    "ADDICTION_CURED": [
+        "🍬✅ Freed from addiction desu! Can eat trash happily now desu!"
+    ]
+}

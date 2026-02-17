@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+
+# 가상환경
+venv/
+env/
+.venv/
+
+# Flask
+instance/
+*.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# 환경 변수
+.env
+.flaskenv
+
+# === D3D Protocol: Git 관리 정책 ===
+# README.md, CHANGELOG.md, BUILD_GUIDE.md만 Git에 포함
+# 아래 문서들은 로컬에서만 관리 (Git에 올리지 않음)
+spec.md
+designs.md
+IMPLEMENTATION_SUMMARY.md
+LESSONS_LEARNED.md
+DESIGN_DECISIONS.md
+audit_roadmap.md
+
+# Antigravity 아카이브
+.antigravity/

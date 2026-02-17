@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ t('battle.logs_title') }} - {{ t('site.title') }}{% endblock %}
+{% block content %}
+<div class="dashboard">
+    <div class="terminal-box header-box">
+        <div class="header-row">
+            <span>📋 <strong>{{ t('battle.logs_title') }}</strong></span>
+            <span>🏕️ {{ park.name }}</span>
+            <a href="{{ url_for('game.dashboard') }}" class="terminal-btn btn-secondary" id="btn-back-dashboard">←
+                {{ t('nav.dashboard') }}</a>
+        </div>
+    </div>
+
+    {% if logs %}
+    {% for log in logs %}
+    <div
+        class="terminal-box {% if log.attacker_id == park.id %}{% if log.result == 'win' %}battle-win{% else %}battle-lose{% endif %}{% else %}{% if log.result == 'win' %}battle-lose{% else %}battle-win{% endif %}{% endif %}">
+        <div class="box-header">
+            {% if log.attacker_id == park.id %}
+            ⚔️ {{ park.name }} → {{ log.defender.name if log.defender else '???' }}
+            {% if log.result == 'win' %}
+            <span class="result-badge win">✅ {{ t('battle.result_win') }}</span>
+            {% else %}
+            <span class="result-badge lose">❌ {{ t('battle.result_lose') }}</span>
+            {% endif %}
+            {% else %}
+            🛡️ {{ log.attacker.name if log.attacker else '???' }} → {{ park.name }}
+            {% if log.result == 'win' %}
+            <span class="result-badge lose">❌ {{ t('battle.invaded') }}</span>
+            {% else %}
+            <span class="result-badge win">✅ {{ t('battle.defended') }}</span>
+            {% endif %}
+            {% endif %}
+            <span class="log-time">{{ log.created_at.strftime('%m/%d %H:%M') }}</span>
+        </div>
+        <div class="box-content">
+            <pre class="battle-detail">{{ log.log_text }}</pre>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="terminal-box">
+        <div class="box-content">
+            <p class="npc-speech">{{ t('battle.no_logs') }}</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

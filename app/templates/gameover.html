@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ t('gameover.title') }} - {{ t('site.title') }}{% endblock %}
+{% block content %}
+<div class="gameover-screen">
+    <div class="terminal-box">
+        <div class="gameover-logo">
+            <div class="gameover-face">( x _ x )</div>
+            <pre class="gameover-art">
+ ██████╗  █████╗ ███╗   ███╗███████╗
+██╔════╝ ██╔══██╗████╗ ████║██╔════╝
+██║  ███╗███████║██╔████╔██║█████╗
+██║   ██║██╔══██║██║╚██╔╝██║██╔══╝
+╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗
+ ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
+ ██████╗ ██╗   ██╗███████╗██████╗
+██╔═══██╗██║   ██║██╔════╝██╔══██╗
+██║   ██║██║   ██║█████╗  ██████╔╝
+██║   ██║╚██╗ ██╔╝██╔══╝  ██╔══██╗
+╚██████╔╝ ╚████╔╝ ███████╗██║  ██║
+ ╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═╝
+            </pre>
+        </div>
+        <div class="gameover-text">
+            <h2>{{ park.name }}</h2>
+            <p class="death-speech">"{{ t('gameover.speech1') }}"</p>
+            <p class="death-speech">"{{ t('gameover.speech2') }}"</p>
+            <div class="gameover-stats">
+                <div class="stat-line">{{ t('gameover.survive_turns') }}: <strong>{{ park.turn_count }}</strong></div>
+                <div class="stat-line">{{ t('gameover.final_guards') }}: <strong>{{ park.guard_count }}</strong></div>
+                <div class="stat-line">{{ t('gameover.final_adults') }}: <strong>{{ park.adult_count }}</strong></div>
+                <div class="stat-line">{{ t('gameover.final_children') }}: <strong>{{ park.child_count }}</strong></div>
+            </div>
+            <p class="death-info" style="margin-top:12px; color:#666; font-size:11px;">
+                {{ t('gameover.destroyed_at', turn=park.turn_count) }}
+            </p>
+            <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center;">
+                <form method="POST" action="{{ url_for('game.restart') }}">
+                    <button type="submit" class="terminal-btn btn-primary" style="font-size:14px; padding:8px 20px;">
+                        {{ t('gameover.restart') }}
+                    </button>
+                </form>
+                <a href="{{ url_for('game.ranking') }}" class="terminal-btn" style="font-size:14px; padding:8px 20px;">
+                    {{ t('nav.ranking') }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
