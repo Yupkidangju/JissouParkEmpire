@@ -256,5 +256,6 @@
     "flash.reg_success": "公園「{name}」が誕生したでち！ボス様歓迎でち！！",
     "flash.diplo_reject": "同盟要請を拒否したでち！",
     "flash.diplo_break_fail": "解除できない関係でち！",
-    "flash.diplo_not_mine": "自分の外交関係ではないでち！"
+    "flash.diplo_not_mine": "自分の外交関係ではないでち！",
+    "flash.reg_invalid_chars": "名前に特殊文字(<>&\"'など)は使えないでち！"
 }

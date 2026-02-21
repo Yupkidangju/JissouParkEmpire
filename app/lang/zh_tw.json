@@ -256,5 +256,6 @@
     "flash.reg_success": "公園「{name}」誕生的說！歡迎老大的說！！",
     "flash.diplo_reject": "拒絕了同盟請求的說！",
     "flash.diplo_break_fail": "無法解除的關係的說！",
-    "flash.diplo_not_mine": "不是自己的外交關係的說！"
+    "flash.diplo_not_mine": "不是自己的外交關係的說！",
+    "flash.reg_invalid_chars": "名稱不能包含特殊字元(<>&\"'等)的說！"
 }

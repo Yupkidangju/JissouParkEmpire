@@ -256,5 +256,6 @@
     "flash.reg_success": "Park \"{name}\" is born desu! Welcome Boss desu!!",
     "flash.diplo_reject": "Alliance request rejected desu!",
     "flash.diplo_break_fail": "Cannot dissolve this relation desu!",
-    "flash.diplo_not_mine": "Not your diplomacy desu!"
+    "flash.diplo_not_mine": "Not your diplomacy desu!",
+    "flash.reg_invalid_chars": "Name cannot contain special characters (<>&\"' etc.) desu!"
 }

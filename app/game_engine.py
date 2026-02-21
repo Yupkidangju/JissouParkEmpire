@@ -441,9 +441,16 @@ def action_birth(park):
         messages.append(DLG.get_random_dialogue(DLG.BIRTH_DEFORM))
         park.morale = max(0, park.morale - 3)
 
-    # 인구 상한 확인
+    # 인구 상한 확인 (자실장 — population_cap 기준)
     space = park.population_cap - park.total_population
     new_children = min(new_children, max(0, space))
+
+    # [v1.5.0] 저실장 수용 상한 확인 (baby_cap 기준) — Exploit 차단
+    # 운치굴이 없어도 최소 5마리까지는 보유 가능 (BASE_BABY_CAP)
+    BASE_BABY_CAP = 5
+    effective_baby_cap = max(BASE_BABY_CAP, park.baby_cap)
+    baby_space = max(0, effective_baby_cap - park.baby_count)
+    new_babies = min(new_babies, baby_space)
 
     park.child_count += new_children
     park.baby_count += new_babies

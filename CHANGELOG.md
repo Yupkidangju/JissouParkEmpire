@@ -8,6 +8,26 @@
 
 ### 예정됨 (Planned)
 - **Phase 9: 안드로이드 솔플 APK 빌드** (Kivy/BeeWare 기반)
+
+## [1.5.0] - 2026-02-21
+
+### 보안 (Security)
+- **XSS 취약점 차단**: Toast 알림 + 정찰 모달에서 `innerHTML` → `textContent`/`escapeHtml()` 전환
+  - `escapeHtml()` 글로벌 유틸 함수 추가 (HTML 특수문자 이스케이프)
+  - 정찰 데이터 숫자값 `Number()` 캐스팅으로 타입 안전성 확보
+- **공원 이름 특수문자 차단**: 가입 시 `<>&"'/\` 포함 이름 거부 (XSS 근본 원인 차단)
+- **교역 Double Spend 방지**: 원자적 `UPDATE-WHERE` 패턴으로 동시 수락 차단
+  - `status='pending'` → `status='processing'` 원자적 전환 후 교환 실행
+  - 실패 시 상태 원복 로직 추가
+- **자원 음수 방어**: 교역 자원 감산에 `max(0, ...)` 클램핑 적용
+
+### 수정됨 (Fixed)
+- **저실장 무한 번식 Exploit**: 출산 시 `baby_cap` 검사 추가
+  - 운치굴 없어도 최소 5마리(BASE_BABY_CAP) 보유 가능
+  - 운치굴 수용량 초과 시 저실장 출산 차단
+- **모델 레벨 음수 방어**: `Park` 모델에 `@validates` 데코레이터 적용
+  - 인구(guard/adult/child/baby), 자원(konpeito/trash/meat/material), boss_hp, morale, AP, 턴 12개 필드
+  - 어디서든 음수 설정 시 자동 0 클램핑 (DB 무결성 보호)
   - 멀티플레이 요소 제거 (인증/교역/외교 → NPC 자동화)
   - Python 게임 로직 100% 재사용 (game_engine, battle_engine, npc_engine, dialogues)
   - SQLite + JSON i18n 그대로 이식

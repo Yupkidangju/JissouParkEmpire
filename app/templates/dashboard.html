@@ -505,6 +505,15 @@
         document.getElementById('modal-overlay').style.display = 'none';
     }
 
+    // === [v1.5.0] XSS 방지 유틸 함수 ===
+    // HTML 특수문자를 이스케이프하여 스크립트 주입을 원천 차단
+    function escapeHtml(str) {
+        if (typeof str !== 'string') return String(str);
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
     // === 정찰 버튼 처리 ===
     document.querySelectorAll('.btn-scout').forEach(btn => {
         btn.addEventListener('click', async () => {
@@ -517,21 +526,22 @@
                 const content = document.getElementById('scout-content');
                 document.getElementById('scout-title').textContent = `👁️ ${parkName}`;
 
-                let html = `<p style="color:#ffaa00; margin-bottom:6px;">${data.message}</p>`;
+                // [v1.5.0] XSS 방지: 서버 응답 데이터를 이스케이프 처리
+                let html = `<p style="color:#ffaa00; margin-bottom:6px;">${escapeHtml(data.message)}</p>`;
                 const d = data.data;
-                html += `<div>🏠 ${I18N.scoutPopulation}: <strong>${d.total_population}</strong></div>`;
+                html += `<div>🏠 ${escapeHtml(I18N.scoutPopulation)}: <strong>${Number(d.total_population)}</strong></div>`;
 
                 if (data.has_watchtower) {
-                    html += `<div>${I18N.scoutGuards}: <strong>${d.guard_count}</strong></div>`;
-                    html += `<div>${I18N.scoutAdults}: <strong>${d.adult_count}</strong></div>`;
-                    html += `<div>${I18N.scoutChildren}: <strong>${d.child_count}</strong></div>`;
-                    html += `<div>${I18N.scoutBabies}: <strong>${d.baby_count}</strong></div>`;
-                    html += `<div style="margin-top:4px;">${I18N.scoutPower}: <strong style="color:#ff8800;">${d.total_combat_power}</strong></div>`;
-                    html += `<div>🛡️ ${I18N.scoutDefense}: <strong>${d.defense_power}</strong></div>`;
-                    html += `<div>${I18N.scoutWalls}: <strong>${d.walls}</strong></div>`;
-                    html += `<div>${I18N.scoutMorale}: <strong>${d.morale}/100</strong></div>`;
+                    html += `<div>${escapeHtml(I18N.scoutGuards)}: <strong>${Number(d.guard_count)}</strong></div>`;
+                    html += `<div>${escapeHtml(I18N.scoutAdults)}: <strong>${Number(d.adult_count)}</strong></div>`;
+                    html += `<div>${escapeHtml(I18N.scoutChildren)}: <strong>${Number(d.child_count)}</strong></div>`;
+                    html += `<div>${escapeHtml(I18N.scoutBabies)}: <strong>${Number(d.baby_count)}</strong></div>`;
+                    html += `<div style="margin-top:4px;">${escapeHtml(I18N.scoutPower)}: <strong style="color:#ff8800;">${Number(d.total_combat_power)}</strong></div>`;
+                    html += `<div>🛡️ ${escapeHtml(I18N.scoutDefense)}: <strong>${Number(d.defense_power)}</strong></div>`;
+                    html += `<div>${escapeHtml(I18N.scoutWalls)}: <strong>${Number(d.walls)}</strong></div>`;
+                    html += `<div>${escapeHtml(I18N.scoutMorale)}: <strong>${Number(d.morale)}/100</strong></div>`;
                 } else {
-                    html += `<p style="color:#666; font-style:italic; margin-top:6px;">${I18N.scoutNeedTower}</p>`;
+                    html += `<p style="color:#666; font-style:italic; margin-top:6px;">${escapeHtml(I18N.scoutNeedTower)}</p>`;
                 }
 
                 content.innerHTML = html;
@@ -619,7 +629,14 @@
                 cursor: pointer;
                 backdrop-filter: blur(4px);
             `;
-            toast.innerHTML = `<span style="font-size:14px;">${style.icon}</span> ${notif.message}`;
+            // [v1.5.0] XSS 방지: innerHTML 대신 안전한 DOM 구성
+            const iconSpan = document.createElement('span');
+            iconSpan.style.fontSize = '14px';
+            iconSpan.textContent = style.icon;
+            const msgSpan = document.createElement('span');
+            msgSpan.textContent = ' ' + notif.message;
+            toast.appendChild(iconSpan);
+            toast.appendChild(msgSpan);
             toast.onclick = () => toast.remove();
             container.appendChild(toast);
             setTimeout(() => {

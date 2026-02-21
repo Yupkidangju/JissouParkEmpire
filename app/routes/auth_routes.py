@@ -84,6 +84,16 @@ def register():
             flash(get_text('flash.reg_parkname_len'), 'error')
             return render_template('register.html')
 
+        # [v1.5.0] XSS 방지: 아이디/공원 이름에 HTML 특수문자 차단
+        import re
+        _DANGEROUS_CHARS = re.compile(r'[<>&\"\'/\\]')
+        if _DANGEROUS_CHARS.search(username):
+            flash(get_text('flash.reg_invalid_chars'), 'error')
+            return render_template('register.html')
+        if _DANGEROUS_CHARS.search(park_name):
+            flash(get_text('flash.reg_invalid_chars'), 'error')
+            return render_template('register.html')
+
         # 중복 확인
         if User.query.filter_by(username=username).first():
             flash(get_text('flash.reg_username_dup'), 'error')

@@ -256,5 +256,6 @@
     "flash.reg_success": "공원 \"{name}\" 이 탄생했는 데스! 보스님 환영하는 데스!!",
     "flash.diplo_reject": "동맹 요청을 거절했는 데스!",
     "flash.diplo_break_fail": "해제할 수 없는 관계인 데스!",
-    "flash.diplo_not_mine": "내 외교 관계가 아닌 데스!"
+    "flash.diplo_not_mine": "내 외교 관계가 아닌 데스!",
+    "flash.reg_invalid_chars": "이름에 특수문자(<>&\"' 등)는 사용할 수 없는 데스!"
 }

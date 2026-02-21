@@ -118,6 +118,17 @@ class Park(db.Model):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # [v1.5.0] 인구/자원 음수 방어 — 모델 레벨 자동 클램핑
+    # 게임 엔진 내 30+ 곳의 감산에서 음수가 발생해도 DB에 0 미만이 저장되지 않음
+    @db.validates('guard_count', 'adult_count', 'child_count', 'baby_count',
+                  'konpeito', 'trash_food', 'meat_stock', 'material',
+                  'boss_hp', 'morale', 'action_points', 'turn_quota')
+    def _clamp_non_negative(self, key, value):
+        """음수 값이 설정되면 0으로 클램핑 (DB 무결성 보호)"""
+        if value is not None and value < 0:
+            return 0
+        return value
+
     # 관계 설정
     build_queue = db.relationship('BuildQueue', backref='park',
                                   cascade='all, delete-orphan')

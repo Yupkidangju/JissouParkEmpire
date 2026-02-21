@@ -680,18 +680,32 @@ def trade_accept(trade_id):
     if not park or park.is_destroyed:
         return redirect(url_for('game.dashboard'))
 
-    trade = TradeOffer.query.get(trade_id)
-    if not trade or trade.status != 'pending':
+    # [v1.5.0] Double Spend 방지: 원자적 UPDATE-WHERE로 동시 수락 차단
+    # SQLite 파일 락이 UPDATE 문 단위로 걸리므로, WHERE 조건에 status를 넣으면
+    # 경쟁 조건(Race Condition)이 DB 레벨에서 차단됨
+    updated = TradeOffer.query.filter_by(
+        id=trade_id, status='pending'
+    ).update({'status': 'processing'})
+    db.session.flush()
+
+    if updated == 0:
+        # 이미 다른 요청이 처리했거나 존재하지 않는 교역
         flash(get_text('flash.trade_not_found'), 'error')
         return redirect(url_for('game.trade_market'))
 
+    trade = TradeOffer.query.get(trade_id)
+
     # 자기 자신의 제안은 수락 불가
     if trade.sender_id == park.id:
+        trade.status = 'pending'  # 원복
+        db.session.commit()
         flash(get_text('flash.trade_self'), 'error')
         return redirect(url_for('game.trade_market'))
 
     # 지정 교역이면 내가 대상인지 확인
     if trade.receiver_id and trade.receiver_id != park.id:
+        trade.status = 'pending'  # 원복
+        db.session.commit()
         flash(get_text('flash.trade_not_mine'), 'error')
         return redirect(url_for('game.trade_market'))
 
@@ -717,15 +731,18 @@ def trade_accept(trade_id):
         trade.request_trash > park.trash_food or
         trade.request_material > park.material or
         trade.request_babies > park.baby_count):
+        trade.status = 'pending'  # 원복 (내 자원 부족이므로 교역은 유효)
+        db.session.commit()
         flash(get_text('flash.trade_my_insufficient'), 'error')
         return redirect(url_for('game.trade_market'))
 
     # === 자원 교환 실행 ===
+    # [v1.5.0] 자원 음수 방어: max(0, ...) 클램핑 적용
     # 발송자 → 수락자 (offer)
-    sender.konpeito -= trade.offer_konpeito
-    sender.trash_food -= trade.offer_trash
-    sender.material -= trade.offer_material
-    sender.baby_count -= trade.offer_babies
+    sender.konpeito = max(0, sender.konpeito - trade.offer_konpeito)
+    sender.trash_food = max(0, sender.trash_food - trade.offer_trash)
+    sender.material = max(0, sender.material - trade.offer_material)
+    sender.baby_count = max(0, sender.baby_count - trade.offer_babies)
 
     park.konpeito = min(park.konpeito + trade.offer_konpeito, park.konpeito_cap)
     park.trash_food = min(park.trash_food + trade.offer_trash, park.trash_food_cap)
@@ -733,10 +750,10 @@ def trade_accept(trade_id):
     park.baby_count += trade.offer_babies
 
     # 수락자 → 발송자 (request)
-    park.konpeito -= trade.request_konpeito
-    park.trash_food -= trade.request_trash
-    park.material -= trade.request_material
-    park.baby_count -= trade.request_babies
+    park.konpeito = max(0, park.konpeito - trade.request_konpeito)
+    park.trash_food = max(0, park.trash_food - trade.request_trash)
+    park.material = max(0, park.material - trade.request_material)
+    park.baby_count = max(0, park.baby_count - trade.request_babies)
 
     sender.konpeito = min(sender.konpeito + trade.request_konpeito, sender.konpeito_cap)
     sender.trash_food = min(sender.trash_food + trade.request_trash, sender.trash_food_cap)
