@@ -224,8 +224,22 @@ def _calc_losses_selected(send_guards, send_adults, power_ratio, is_winner):
     else:
         loss_rate = random.uniform(0.2, 0.5)     # 패자: 20~50% 손실
 
-    losses['guards'] = min(send_guards, max(0, int(send_guards * loss_rate)))
-    losses['adults'] = min(send_adults, max(0, int(send_adults * loss_rate)))
+    # [v1.6.2] 소수점 불사 부대 Exploit 방지
+    # int() 절사 대신 확률적 올림: fractional part를 확률로 처리
+    # 예: 4 * 0.2 = 0.8 → 80% 확률로 1명 사망, 20% 확률로 0명
+    def stochastic_round(value):
+        """확률적 반올림: 소수부를 확률로 처리하여 int 절사 Exploit 방지"""
+        base = int(value)
+        frac = value - base
+        if frac > 0 and random.random() < frac:
+            base += 1
+        return base
+
+    raw_guard_loss = send_guards * loss_rate
+    raw_adult_loss = send_adults * loss_rate
+
+    losses['guards'] = min(send_guards, max(0, stochastic_round(raw_guard_loss)))
+    losses['adults'] = min(send_adults, max(0, stochastic_round(raw_adult_loss)))
 
     return losses
 

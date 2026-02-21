@@ -571,14 +571,16 @@ def trade_market():
     ).order_by(TradeOffer.created_at.desc()).limit(20).all()
 
     # 내게 온 교역 제안 (receiver_id가 내 공원이고 pending)
+    # [v1.6.2] DoS 방지: 쿼리 제한
     my_incoming = TradeOffer.query.filter_by(
         receiver_id=park.id, status='pending'
-    ).order_by(TradeOffer.created_at.desc()).all()
+    ).order_by(TradeOffer.created_at.desc()).limit(50).all()
 
     # 내가 보낸 교역 제안 (pending만)
+    # [v1.6.2] DoS 방지: 쿼리 제한
     my_outgoing = TradeOffer.query.filter_by(
         sender_id=park.id, status='pending'
-    ).order_by(TradeOffer.created_at.desc()).all()
+    ).order_by(TradeOffer.created_at.desc()).limit(50).all()
 
     # 다른 공원 목록 (교역 대상 선택용, NPC 포함)
     other_parks = Park.query.filter(
@@ -626,6 +628,14 @@ def trade_create():
     park = current_user.park
     if not park or park.is_destroyed:
         return redirect(url_for('game.dashboard'))
+
+    # [v1.6.2] 유저당 동시 교역 제한 — 교역 스팸 DoS 방지
+    pending_count = TradeOffer.query.filter_by(
+        sender_id=park.id, status='pending'
+    ).count()
+    if pending_count >= 10:
+        flash('동시에 10개 이상의 교역을 등록할 수 없는 데스!', 'error')
+        return redirect(url_for('game.trade_market'))
 
     # 폼에서 값 읽기
     receiver_id = request.form.get('receiver_id', type=int)  # 0이면 공개
