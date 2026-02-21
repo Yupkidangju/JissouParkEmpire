@@ -812,7 +812,7 @@ def trade_accept(trade_id):
 @game_bp.route('/trade/reject/<int:trade_id>', methods=['POST'])
 @login_required
 def trade_reject(trade_id):
-    """교역 제안 거절"""
+    """교역 제안 거절 [v1.6.3] 에스크로 환불 추가"""
     from app.models import TradeOffer
     from datetime import datetime
     park = current_user.park
@@ -820,6 +820,15 @@ def trade_reject(trade_id):
     if not trade or trade.status != 'pending':
         flash(get_text('flash.trade_already'), 'error')
         return redirect(url_for('game.trade_market'))
+
+    # [v1.6.3] 에스크로 환불: 거절 시 발송자에게 자원 반환
+    # 이전 버전에서 누락 → 거절 = 자원 소멸 (합법적 경제 테러)
+    sender = Park.query.get(trade.sender_id)
+    if sender and not sender.is_destroyed:
+        sender.konpeito = min(sender.konpeito + trade.offer_konpeito, sender.konpeito_cap)
+        sender.trash_food = min(sender.trash_food + trade.offer_trash, sender.trash_food_cap)
+        sender.material = min(sender.material + trade.offer_material, sender.material_cap)
+        sender.baby_count += trade.offer_babies
 
     trade.status = 'rejected'
     trade.resolved_at = datetime.utcnow()
@@ -831,23 +840,30 @@ def trade_reject(trade_id):
 @game_bp.route('/trade/cancel/<int:trade_id>', methods=['POST'])
 @login_required
 def trade_cancel(trade_id):
-    """내 교역 제안 취소"""
+    """내 교역 제안 취소 [v1.6.3] 원자적 상태 전환"""
     from app.models import TradeOffer
     from datetime import datetime
     park = current_user.park
-    trade = TradeOffer.query.get(trade_id)
-    if not trade or trade.sender_id != park.id or trade.status != 'pending':
+
+    # [v1.6.3] 원자적 상태 전환: 동시 취소 중복 환불 Race Condition 방지
+    updated = TradeOffer.query.filter(
+        TradeOffer.id == trade_id,
+        TradeOffer.sender_id == park.id,
+        TradeOffer.status == 'pending'
+    ).update({'status': 'cancelled', 'resolved_at': datetime.utcnow()})
+    db.session.flush()
+
+    if updated == 0:
         flash(get_text('flash.trade_cancel_fail'), 'error')
         return redirect(url_for('game.trade_market'))
 
-    # [v1.5.1] 에스크로 환불: 취소 시 선차감된 자원을 돌려줌
+    # 원자적 업데이트 성공 후 환불 (1번만 실행됨)
+    trade = TradeOffer.query.get(trade_id)
     park.konpeito = min(park.konpeito + trade.offer_konpeito, park.konpeito_cap)
     park.trash_food = min(park.trash_food + trade.offer_trash, park.trash_food_cap)
     park.material = min(park.material + trade.offer_material, park.material_cap)
     park.baby_count += trade.offer_babies
 
-    trade.status = 'cancelled'
-    trade.resolved_at = datetime.utcnow()
     db.session.commit()
     flash(get_text('flash.trade_cancelled'), 'info')
     return redirect(url_for('game.trade_market'))
@@ -946,11 +962,12 @@ def diplomacy_enemy(target_id):
     from app.game_engine import add_event
     park = current_user.park
 
-    # [v1.6.1] AP 비용: 무비용 적대 선언/해제 얼체짓 Exploit 방지
-    if park.action_points < 1 and park.turn_quota < 1:
-        flash('행동 포인트가 부족한 데스!', 'error')
+    # [v1.6.3] consume_turn으로 AP 소비 (AP=0일 때 턴 자동 진행)
+    turn_ok, turn_msgs = game_engine.consume_turn(park, ap_cost=1)
+    if not turn_ok:
+        for msg in turn_msgs:
+            flash(msg, 'error')
         return redirect(url_for('game.trade_market'))
-    park.action_points = max(0, park.action_points - 1)
 
     target = Park.query.get(target_id)
     if not target or target.is_destroyed or target.id == park.id:
@@ -992,17 +1009,18 @@ def diplomacy_enemy(target_id):
 @game_bp.route('/diplomacy/dissolve/<int:diplo_id>', methods=['POST'])
 @login_required
 def diplomacy_dissolve(diplo_id):
-    """외교 관계 해제 (동맹 파기 / 적대 종료) [v1.6.1] 1AP 비용 추가"""
+    """외교 관계 해제 (동맹 파기 / 적대 종료) [v1.6.3] consume_turn 적용"""
     from app.models import Diplomacy
     from app.game_engine import add_event
     from datetime import datetime
     park = current_user.park
 
-    # [v1.6.1] AP 비용: 무비용 외교 조작 Exploit 방지
-    if park.action_points < 1 and park.turn_quota < 1:
-        flash('행동 포인트가 부족한 데스!', 'error')
+    # [v1.6.3] consume_turn으로 AP 소비 (AP=0일 때 턴 자동 진행)
+    turn_ok, turn_msgs = game_engine.consume_turn(park, ap_cost=1)
+    if not turn_ok:
+        for msg in turn_msgs:
+            flash(msg, 'error')
         return redirect(url_for('game.trade_market'))
-    park.action_points = max(0, park.action_points - 1)
 
     diplo = Diplomacy.query.get(diplo_id)
     if not diplo or diplo.status != 'active':
