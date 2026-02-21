@@ -86,8 +86,9 @@ def gather():
             flash(msg, 'error')
         return redirect(url_for('game.dashboard'))
 
-    num_adults = int(request.form.get('num_adults', 0))
-    num_children = int(request.form.get('num_children', 0))
+    # [v1.5.1] int() 직접 캐스팅 → 안전 파싱 (ValueError 방지)
+    num_adults = request.form.get('num_adults', 0, type=int)
+    num_children = request.form.get('num_children', 0, type=int)
 
     success, result, messages = game_engine.action_gather(
         park, num_adults, num_children
@@ -111,7 +112,7 @@ def cull():
     park = current_user.park
     target = request.form.get('target_type', '')  # 'baby' 또는 'child'
     convert = request.form.get('convert_to', '')  # 'food' 또는 'material'
-    count = int(request.form.get('count', 1))
+    count = request.form.get('count', 1, type=int)  # [v1.5.1] 안전 파싱
 
     success, result, messages = game_engine.action_cull(
         park, target, convert, count
@@ -210,9 +211,10 @@ def attack():
               f'(경호 {GC.PROTECT_GUARD_MIN}↑ & 성체 {GC.PROTECT_ADULT_MIN}↑ 필요)', 'error')
         return redirect(url_for('game.dashboard'))
 
-    target_id = int(request.form.get('target_id', 0))
-    send_guards = int(request.form.get('send_guards', 0))
-    send_adults = int(request.form.get('send_adults', 0))
+    # [v1.5.1] 안전 파싱
+    target_id = request.form.get('target_id', 0, type=int)
+    send_guards = request.form.get('send_guards', 0, type=int)
+    send_adults = request.form.get('send_adults', 0, type=int)
     boss_joins = request.form.get('boss_joins') == 'on'
 
     if park.action_points < 2:
@@ -299,8 +301,9 @@ def attack():
 def defend():
     """방어 배치 행동 (1 AP)"""
     park = current_user.park
-    num_guards = int(request.form.get('num_guards', 0))
-    num_adults = int(request.form.get('num_adults', 0))
+    # [v1.5.1] 안전 파싱
+    num_guards = request.form.get('num_guards', 0, type=int)
+    num_adults = request.form.get('num_adults', 0, type=int)
 
     if park.action_points < 1:
         flash(get_text('flash.ap_insufficient'), 'error')
@@ -339,6 +342,11 @@ def debug_next_turn():
     """디버그: 턴 강제 실행 (개발 편의용)"""
     from flask import current_app
     from app.turn_scheduler import force_process_turn
+
+    # [v1.5.1] 보안: DEBUG 모드 전용 가드 — 프로덕션에서 백도어 차단
+    if not current_app.config.get('DEBUG', False):
+        flash('디버그 모드가 아닌 데스! 이 기능은 사용할 수 없는 데스!', 'error')
+        return redirect(url_for('game.dashboard'))
 
     park = current_user.park
     force_process_turn(current_app._get_current_object(), park.id)
@@ -633,7 +641,20 @@ def trade_create():
     request_trash = request.form.get('request_trash', 0, type=int)
     request_material = request.form.get('request_material', 0, type=int)
     request_babies = request.form.get('request_babies', 0, type=int)
-    msg = request.form.get('trade_message', '')[:200]
+
+    # [v1.5.1] 음수 자원 차단 — 음수 입력으로 자원 증식 Exploit 방지
+    offer_konpeito = max(0, offer_konpeito)
+    offer_trash = max(0, offer_trash)
+    offer_material = max(0, offer_material)
+    offer_babies = max(0, offer_babies)
+    request_konpeito = max(0, request_konpeito)
+    request_trash = max(0, request_trash)
+    request_material = max(0, request_material)
+    request_babies = max(0, request_babies)
+
+    # [v1.5.1] 교역 메시지 XSS 방지 — HTML 특수문자 이스케이프
+    import html as html_lib
+    msg = html_lib.escape(request.form.get('trade_message', '')[:200])
 
     # 검증: 최소 하나는 제안하고, 최소 하나는 요청해야 함
     total_offer = offer_konpeito + offer_trash + offer_material + offer_babies
@@ -648,17 +669,24 @@ def trade_create():
         flash(get_text('flash.trade_insufficient'), 'error')
         return redirect(url_for('game.trade_market'))
 
+    # [v1.5.1] 에스크로: 교역 등록 시 제안 자원을 즉시 선차감
+    # 교역 취소/만료 시 환불됨 — 유령 자원 복사 Exploit 차단
+    park.konpeito -= offer_konpeito
+    park.trash_food -= offer_trash
+    park.material -= offer_material
+    park.baby_count -= offer_babies
+
     trade = TradeOffer(
         sender_id=park.id,
         receiver_id=receiver_id if receiver_id and receiver_id > 0 else None,
-        offer_konpeito=max(0, offer_konpeito),
-        offer_trash=max(0, offer_trash),
-        offer_material=max(0, offer_material),
-        offer_babies=max(0, offer_babies),
-        request_konpeito=max(0, request_konpeito),
-        request_trash=max(0, request_trash),
-        request_material=max(0, request_material),
-        request_babies=max(0, request_babies),
+        offer_konpeito=offer_konpeito,
+        offer_trash=offer_trash,
+        offer_material=offer_material,
+        offer_babies=offer_babies,
+        request_konpeito=request_konpeito,
+        request_trash=request_trash,
+        request_material=request_material,
+        request_babies=request_babies,
         message=msg,
     )
     db.session.add(trade)
@@ -711,20 +739,14 @@ def trade_accept(trade_id):
 
     sender = Park.query.get(trade.sender_id)
     if not sender or sender.is_destroyed:
+        # [v1.5.1] 에스크로 환불 불가 (발송자 멸망) — 자원 소멸 처리
         trade.status = 'expired'
         db.session.commit()
         flash(get_text('flash.trade_sender_dead'), 'warning')
         return redirect(url_for('game.trade_market'))
 
-    # 보유량 재확인 (발송자)
-    if (trade.offer_konpeito > sender.konpeito or
-        trade.offer_trash > sender.trash_food or
-        trade.offer_material > sender.material or
-        trade.offer_babies > sender.baby_count):
-        trade.status = 'expired'
-        db.session.commit()
-        flash(get_text('flash.trade_sender_poor'), 'warning')
-        return redirect(url_for('game.trade_market'))
+    # [v1.5.1] 에스크로 적용으로 발송자 보유량 재확인 불필요 (이미 선차감됨)
+    # 단, 만료 처리 시에는 환불이 필요하므로 별도 핸들링
 
     # 수락자 보유량 확인 (내가 줄 것)
     if (trade.request_konpeito > park.konpeito or
@@ -737,13 +759,8 @@ def trade_accept(trade_id):
         return redirect(url_for('game.trade_market'))
 
     # === 자원 교환 실행 ===
-    # [v1.5.0] 자원 음수 방어: max(0, ...) 클램핑 적용
-    # 발송자 → 수락자 (offer)
-    sender.konpeito = max(0, sender.konpeito - trade.offer_konpeito)
-    sender.trash_food = max(0, sender.trash_food - trade.offer_trash)
-    sender.material = max(0, sender.material - trade.offer_material)
-    sender.baby_count = max(0, sender.baby_count - trade.offer_babies)
-
+    # [v1.5.1] 에스크로: 발송자 자원은 이미 교역 등록 시 차감됨
+    # → 수락자에게 직접 전달 (발송자 감산 불필요)
     park.konpeito = min(park.konpeito + trade.offer_konpeito, park.konpeito_cap)
     park.trash_food = min(park.trash_food + trade.offer_trash, park.trash_food_cap)
     park.material = min(park.material + trade.offer_material, park.material_cap)
@@ -801,6 +818,12 @@ def trade_cancel(trade_id):
     if not trade or trade.sender_id != park.id or trade.status != 'pending':
         flash(get_text('flash.trade_cancel_fail'), 'error')
         return redirect(url_for('game.trade_market'))
+
+    # [v1.5.1] 에스크로 환불: 취소 시 선차감된 자원을 돌려줌
+    park.konpeito = min(park.konpeito + trade.offer_konpeito, park.konpeito_cap)
+    park.trash_food = min(park.trash_food + trade.offer_trash, park.trash_food_cap)
+    park.material = min(park.material + trade.offer_material, park.material_cap)
+    park.baby_count += trade.offer_babies
 
     trade.status = 'cancelled'
     trade.resolved_at = datetime.utcnow()

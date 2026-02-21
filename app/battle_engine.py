@@ -108,6 +108,8 @@ def execute_battle(attacker, defender, send_guards=None, send_adults=None, boss_
         defender.morale = min(100, defender.morale + 5)
 
     # === 5. 보스 피해 판정 ===
+    # [v1.5.1] 보스 단독 출전 시 승리해도 소량 HP 감소 (무손실 파밍 Exploit 차단)
+    boss_solo = boss_joins and (send_guards + send_adults == 0)
     if boss_joins and not attacker_wins:
         # 보스가 참전했는데 졌으면 확정 피해
         boss_dmg = random.randint(10, 25)
@@ -116,6 +118,14 @@ def execute_battle(attacker, defender, send_guards=None, send_adults=None, boss_
         if attacker.boss_hp <= 0:
             attacker.is_destroyed = True
             messages.append("💀 보스실장이 죽었는 데스... 공원은 멸망한 데스...")
+    elif boss_solo and attacker_wins:
+        # [v1.5.1] 보스 단독 승리: 호위 없이 전투하므로 경미한 피해 (3~8)
+        boss_dmg = random.randint(3, 8)
+        attacker.boss_hp = max(0, attacker.boss_hp - boss_dmg)
+        messages.append(f"👑 호위 없이 싸워서 보스실장이 {boss_dmg} 피해를 입은 데스!")
+        if attacker.boss_hp <= 0:
+            attacker.is_destroyed = True
+            messages.append("💀 무모한 단독 출전... 보스실장이 쓰러진 데스...")
     elif not attacker_wins and power_ratio < 0.3:
         # 보스 미참전이라도 대패 시 소량 피해
         boss_dmg = random.randint(3, 10)
@@ -181,6 +191,9 @@ def _calc_attack_power_selected(send_guards, send_adults, morale, boss_joins):
     # 보스 참전 보너스
     if boss_joins:
         base += GC.POWER_BOSS
+        # [v1.5.1] 보스 단독 출전 패널티: 호위 없이 싸우면 전투력 30% 감소
+        if send_guards + send_adults == 0:
+            base = int(base * 0.7)
 
     # 사기 보정
     morale_mult = 1.0 + (morale - 50) * GC.MORALE_COMBAT_EFFECT / 50
