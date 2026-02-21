@@ -177,7 +177,7 @@
                                 class="num-input" id="gather-children"></label>
                     </div>
                     <button type="submit" class="terminal-btn btn-action" id="btn-gather" {% if park.action_points < 1
-                        %}disabled{% endif %}>
+                        and park.turn_quota < 1 %}disabled{% endif %}>
                         {{ t('action.gather_go') }}
                     </button>
                 </form>
@@ -188,8 +188,8 @@
                 <div class="action-title">{{ t('action.breed') }} <span class="ap-cost">2AP</span></div>
                 <p class="action-desc">{{ t('action.breed_desc') }}</p>
                 <form method="POST" action="{{ url_for('game.birth') }}">
-                    <button type="submit" class="terminal-btn btn-action" id="btn-birth" {% if park.action_points < 2 or
-                        park.adult_count < 1 %}disabled{% endif %}>
+                    <button type="submit" class="terminal-btn btn-action" id="btn-birth" {% if (park.action_points < 2
+                        and park.turn_quota < 1) or park.adult_count < 1 %}disabled{% endif %}>
                         {{ t('action.breed_go') }}
                     </button>
                 </form>
@@ -212,7 +212,7 @@
                     </select>
                     <p class="action-desc" id="build-desc">{{ t('action.build_desc') }}</p>
                     <button type="submit" class="terminal-btn btn-action" id="btn-build" {% if park.action_points < 1
-                        %}disabled{% endif %}>
+                        and park.turn_quota < 1 %}disabled{% endif %}>
                         {{ t('action.build_go') }}
                     </button>
                 </form>
@@ -223,8 +223,8 @@
                 <div class="action-title">{{ t('action.train') }} <span class="ap-cost">1AP</span></div>
                 <p class="action-desc">{{ t('action.train_desc') }}</p>
                 <form method="POST" action="{{ url_for('game.train') }}">
-                    <button type="submit" class="terminal-btn btn-action" id="btn-train" {% if park.action_points < 1 or
-                        park.adult_count < 1 %}disabled{% endif %}>
+                    <button type="submit" class="terminal-btn btn-action" id="btn-train" {% if (park.action_points < 1
+                        and park.turn_quota < 1) or park.adult_count < 1 %}disabled{% endif %}>
                         {{ t('action.train_go') }}
                     </button>
                 </form>
@@ -289,7 +289,7 @@
                     </div>
                     <p class="action-desc">{{ t('action.defend_power') }}: <strong>{{ park.defense_power }}</strong></p>
                     <button type="submit" class="terminal-btn btn-action" id="btn-defend" {% if park.action_points < 1
-                        %}disabled{% endif %}>
+                        and park.turn_quota < 1 %}disabled{% endif %}>
                         {{ t('action.defend_change') }}
                     </button>
                 </form>
@@ -371,7 +371,7 @@
                             </button>
                             <button type="button" class="terminal-btn btn-cull btn-attack-sm btn-open-attack"
                                 data-target-id="{{ p.id }}" data-target-name="{{ p.name }}" {% if park.action_points < 2
-                                %}disabled{% endif %}>
+                                and park.turn_quota < 1 %}disabled{% endif %}>
                                 {{ t('action.attack') }}
                             </button>
                         </td>

@@ -931,10 +931,17 @@ def diplomacy_reject(diplo_id):
 @game_bp.route('/diplomacy/enemy/<int:target_id>', methods=['POST'])
 @login_required
 def diplomacy_enemy(target_id):
-    """적대 선언 (일방적, 즉시 활성)"""
+    """적대 선언 (일방적, 즉시 활성) [v1.6.1] 1AP 비용 추가"""
     from app.models import Diplomacy
     from app.game_engine import add_event
     park = current_user.park
+
+    # [v1.6.1] AP 비용: 무비용 적대 선언/해제 얼체짓 Exploit 방지
+    if park.action_points < 1 and park.turn_quota < 1:
+        flash('행동 포인트가 부족한 데스!', 'error')
+        return redirect(url_for('game.trade_market'))
+    park.action_points = max(0, park.action_points - 1)
+
     target = Park.query.get(target_id)
     if not target or target.is_destroyed or target.id == park.id:
         flash(get_text('flash.diplo_invalid'), 'error')
@@ -975,11 +982,18 @@ def diplomacy_enemy(target_id):
 @game_bp.route('/diplomacy/dissolve/<int:diplo_id>', methods=['POST'])
 @login_required
 def diplomacy_dissolve(diplo_id):
-    """외교 관계 해제 (동맹 파기 / 적대 종료)"""
+    """외교 관계 해제 (동맹 파기 / 적대 종료) [v1.6.1] 1AP 비용 추가"""
     from app.models import Diplomacy
     from app.game_engine import add_event
     from datetime import datetime
     park = current_user.park
+
+    # [v1.6.1] AP 비용: 무비용 외교 조작 Exploit 방지
+    if park.action_points < 1 and park.turn_quota < 1:
+        flash('행동 포인트가 부족한 데스!', 'error')
+        return redirect(url_for('game.trade_market'))
+    park.action_points = max(0, park.action_points - 1)
+
     diplo = Diplomacy.query.get(diplo_id)
     if not diplo or diplo.status != 'active':
         flash(get_text('flash.diplo_break_fail'), 'error')

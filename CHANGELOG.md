@@ -9,7 +9,16 @@
 ### 예정됨 (Planned)
 - **Phase 9: 안드로이드 솔플 APK 빌드** (Kivy/BeeWare 기반)
 
-## [1.6.0] - 2026-02-21
+## [1.6.1] - 2026-02-21
+
+### 수정됨 (Fixed)
+- **Soft-Lock 수정**: 버튼 disabled 조건을 `AP < N AND turn_quota < 1` 복합 조건으로 변경
+  - 이전: AP=0이면 모든 버튼 비활성화 → consume_turn 자동 턴 진행 호출 불가 → 영구 정지
+  - 이후: AP=0이어도 턴쿼터 남아있으면 버튼 활성 → 클릭 시 consume_turn이 자동 턴 진행
+
+### 보안 (Security)
+- **외교 0AP Exploit 차단**: 적대 선언/관계 해제에 1AP 비용 추가
+  - 적대 선언(20% 약탈 버프) → 침공 → 적대 해제를 무비용 반복하는 얌체짓 방지
 
 ### 변경됨 (Changed)
 - **AP 시스템 근본 재설계**: `consume_turn()`을 AP 소비 래퍼로 전환
