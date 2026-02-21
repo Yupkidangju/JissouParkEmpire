@@ -73,29 +73,46 @@ def get_turn_info(park):
     }
 
 
-def consume_turn(park):
+def consume_turn(park, ap_cost=1):
     """
-    [v1.2.0] 턴 1개 소비 + process_turn 실행.
-    행동 전에 호출하여 턴 진행 + AP 초기화.
+    [v1.6.0] 행동 실행 시 호출하는 AP 소비 + 자동 턴 진행 래퍼.
+
+    설계 원칙 (v1.5.1 → v1.6.0 리팩토링):
+    - 이전 버전에서는 매 행동마다 턴이 진행되어 AP 시스템이 무력화(Ghost AP)되었음.
+    - 수정 후: AP가 충분하면 AP만 감소시키고 턴은 진행하지 않음.
+    - AP가 부족할 때 턴쿼터를 소비하여 턴을 진행하고 AP를 리셋함.
+
+    흐름:
+    1. AP가 부족하면 → 턴쿼터 1 소비 → process_turn() 실행 (AP=3 리셋)
+    2. AP 소비 (ap_cost만큼)
+    3. 행동 라우트에서 실제 행동 수행
+
     반환: (성공여부, 이벤트 메시지 리스트)
     """
     if park.is_destroyed:
         return False, ['공원이 멸망한 데스...']
 
-    if park.turn_quota <= 0:
-        return False, ['⚡ 턴이 없는 데스! 충전될 때까지 기다리라 데스!']
+    # AP가 부족하면 새 턴 진행
+    if park.action_points < ap_cost:
+        if park.turn_quota <= 0:
+            return False, ['⚡ 턴이 없는 데스! 충전될 때까지 기다리라 데스!']
 
-    # 턴 소비
-    park.turn_quota -= 1
+        # 턴 소비 + 턴 처리 (13단계 잔혹 이벤트 포함, AP=3 리셋)
+        park.turn_quota -= 1
+        process_turn(park)
 
-    # 턴 처리 (기존 13단계 잔혹 이벤트 포함)
-    process_turn(park)
+        # NPC 동기 처리 (플레이어가 턴 소비할 때만 NPC도 진행)
+        if GC.TURN_NPC_SYNC:
+            _sync_npc_turns()
 
-    # NPC 동기 처리 (플레이어가 턴 소비할 때만 NPC도 진행)
-    if GC.TURN_NPC_SYNC:
-        _sync_npc_turns()
+        db.session.commit()
 
-    db.session.commit()
+    # AP가 여전히 부족하면 (리셋 후에도 비용이 큰 경우)
+    if park.action_points < ap_cost:
+        return False, [f'행동 포인트가 부족한 데스! {ap_cost}AP 필요한 데스!']
+
+    # AP 소비만 (턴 진행 없음)
+    park.action_points -= ap_cost
     return True, []
 
 
@@ -217,9 +234,7 @@ def action_gather(park, num_adults=0, num_children=0):
     """
     messages = []
 
-    # AP 확인
-    if park.action_points < 1:
-        return False, {}, ["행동 포인트가 부족한 데스! 다음 턴까지 기다리라 데스!"]
+    # [v1.6.0] AP 체크/소비는 consume_turn(ap_cost=1)에서 처리됨
 
     # [v1.1.0] 태업 중이면 채집 불가
     if park.strike_turns > 0:
@@ -231,9 +246,6 @@ def action_gather(park, num_adults=0, num_children=0):
 
     if num_adults + num_children == 0:
         return False, {}, ["아무도 안 보내면 안 되는 데스!"]
-
-    # AP 소비
-    park.action_points -= 1
 
     # 채집 인원 기억 (다음 턴 기본값으로 사용)
     park.gathering_adults = num_adults
@@ -400,8 +412,7 @@ def action_birth(park):
     """
     messages = []
 
-    if park.action_points < 2:
-        return False, {}, ["행동 포인트가 부족한 데스! 출산에는 2AP 필요한 데스!"]
+    # [v1.6.0] AP 체크/소비는 consume_turn(ap_cost=2)에서 처리됨
 
     if park.adult_count < 1:
         return False, {}, ["출산할 성체실장이 없는 데스!"]
@@ -412,9 +423,6 @@ def action_birth(park):
 
     # NP 소비 (쓰레기부터 소비)
     _consume_np(park, GC.BIRTH_NP_COST)
-
-    # AP 소비
-    park.action_points -= 2
 
     # [v1.1.0] 사산 판정 (5%)
     if random.random() < GC.BIRTH_STILLBORN_CHANCE:
@@ -505,8 +513,7 @@ def action_build(park, building_type):
     """
     messages = []
 
-    if park.action_points < 1:
-        return False, {}, ["행동 포인트가 부족한 데스!"]
+    # [v1.6.0] AP 체크/소비는 consume_turn(ap_cost=1)에서 처리됨
 
     # [v1.1.0] 태업 중이면 건설 불가
     if park.strike_turns > 0:
@@ -521,9 +528,8 @@ def action_build(park, building_type):
     if park.material < bldg['material_cost']:
         return False, {}, [f"자재가 부족한 데스! {bldg['material_cost']}🧱 필요한 데스!"]
 
-    # 자재 소비 & AP 소비
+    # 자재 소비
     park.material -= bldg['material_cost']
-    park.action_points -= 1
 
     # 건설 대기열에 추가
     build = BuildQueue(
@@ -555,8 +561,7 @@ def action_train(park):
     """
     messages = []
 
-    if park.action_points < 1:
-        return False, {}, ["행동 포인트가 부족한 데스!"]
+    # [v1.6.0] AP 체크/소비는 consume_turn(ap_cost=1)에서 처리됨
 
     if park.adult_count < 1:
         return False, {}, ["훈련할 성체실장이 없는 데스!"]
@@ -566,7 +571,6 @@ def action_train(park):
 
     # NP 소비
     _consume_np(park, GC.TRAIN_NP_COST)
-    park.action_points -= 1
     park.adult_count -= 1  # 훈련 중이므로 인원에서 제외
 
     # 훈련 대기열 추가

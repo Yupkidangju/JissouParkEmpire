@@ -79,8 +79,8 @@ def gather():
     """채집 행동 실행 [v1.2.0] 턴 1개 소비"""
     park = current_user.park
 
-    # [v1.2.0] 턴 소비 + 턴 처리
-    turn_ok, turn_msgs = game_engine.consume_turn(park)
+    # [v1.6.0] AP 소비 + 필요 시 턴 자동 진행 (1AP)
+    turn_ok, turn_msgs = game_engine.consume_turn(park, ap_cost=1)
     if not turn_ok:
         for msg in turn_msgs:
             flash(msg, 'error')
@@ -131,7 +131,8 @@ def birth():
     park = current_user.park
 
     # [v1.2.0] 턴 소비
-    turn_ok, turn_msgs = game_engine.consume_turn(park)
+    # [v1.6.0] AP 소비 + 필요 시 턴 자동 진행 (출산=2AP)
+    turn_ok, turn_msgs = game_engine.consume_turn(park, ap_cost=2)
     if not turn_ok:
         for msg in turn_msgs:
             flash(msg, 'error')
@@ -156,8 +157,8 @@ def build():
     park = current_user.park
     building_type = request.form.get('building_type', '')
 
-    # [v1.2.0] 턴 소비
-    turn_ok, turn_msgs = game_engine.consume_turn(park)
+    # [v1.6.0] AP 소비 + 필요 시 턴 자동 진행 (1AP)
+    turn_ok, turn_msgs = game_engine.consume_turn(park, ap_cost=1)
     if not turn_ok:
         for msg in turn_msgs:
             flash(msg, 'error')
@@ -177,8 +178,8 @@ def train():
     """훈련 행동 [v1.2.0] 턴 1개 소비"""
     park = current_user.park
 
-    # [v1.2.0] 턴 소비
-    turn_ok, turn_msgs = game_engine.consume_turn(park)
+    # [v1.6.0] AP 소비 + 필요 시 턴 자동 진행 (1AP)
+    turn_ok, turn_msgs = game_engine.consume_turn(park, ap_cost=1)
     if not turn_ok:
         for msg in turn_msgs:
             flash(msg, 'error')
@@ -198,8 +199,8 @@ def attack():
     """침공 행동 [v1.2.0] 턴 1개 소비 [v0.4.0] 동맹 차단 + 적대 약탈 보너스"""
     park = current_user.park
 
-    # [v1.2.0] 턴 소비
-    turn_ok, turn_msgs = game_engine.consume_turn(park)
+    # [v1.6.0] AP 소비 + 필요 시 턴 자동 진행 (침공=2AP)
+    turn_ok, turn_msgs = game_engine.consume_turn(park, ap_cost=2)
     if not turn_ok:
         for msg in turn_msgs:
             flash(msg, 'error')
@@ -216,10 +217,6 @@ def attack():
     send_guards = request.form.get('send_guards', 0, type=int)
     send_adults = request.form.get('send_adults', 0, type=int)
     boss_joins = request.form.get('boss_joins') == 'on'
-
-    if park.action_points < 2:
-        flash(get_text('flash.ap_attack_need'), 'error')
-        return redirect(url_for('game.dashboard'))
 
     target = Park.query.get(target_id)
     if not target or target.is_destroyed or target.id == park.id:
@@ -248,8 +245,7 @@ def attack():
         flash(get_text('flash.attack_min_unit'), 'error')
         return redirect(url_for('game.dashboard'))
 
-    # AP 소비
-    park.action_points -= 2
+    # [v1.6.0] AP는 consume_turn에서 이미 차감됨
 
     from app.battle_engine import execute_battle
     won, loot, messages = execute_battle(park, target,
@@ -663,18 +659,30 @@ def trade_create():
         flash(get_text('flash.trade_empty'), 'error')
         return redirect(url_for('game.trade_market'))
 
-    # 검증: 보유량 확인
-    if offer_konpeito > park.konpeito or offer_trash > park.trash_food \
-       or offer_material > park.material or offer_babies > park.baby_count:
+    # [v1.6.0] 원자적 에스크로: SQL 레벨에서 보유량 조건 포함 차감
+    # 동시 요청 시 WHERE 조건 불일치로 DB가 자동 차단 (Race Condition 방지)
+    # @validates가 조용히 음수를 0으로 만드는 역설을 근본 차단
+    updated = Park.query.filter(
+        Park.id == park.id,
+        Park.konpeito >= offer_konpeito,
+        Park.trash_food >= offer_trash,
+        Park.material >= offer_material,
+        Park.baby_count >= offer_babies
+    ).update({
+        'konpeito': Park.konpeito - offer_konpeito,
+        'trash_food': Park.trash_food - offer_trash,
+        'material': Park.material - offer_material,
+        'baby_count': Park.baby_count - offer_babies,
+    })
+    db.session.flush()
+
+    if updated == 0:
+        # 동시 요청으로 잔액 부족 발생 — 안전하게 차단
         flash(get_text('flash.trade_insufficient'), 'error')
         return redirect(url_for('game.trade_market'))
 
-    # [v1.5.1] 에스크로: 교역 등록 시 제안 자원을 즉시 선차감
-    # 교역 취소/만료 시 환불됨 — 유령 자원 복사 Exploit 차단
-    park.konpeito -= offer_konpeito
-    park.trash_food -= offer_trash
-    park.material -= offer_material
-    park.baby_count -= offer_babies
+    # 파이썬 객체 동기화 (DB에서 갱신된 값 반영)
+    db.session.refresh(park)
 
     trade = TradeOffer(
         sender_id=park.id,
@@ -759,19 +767,22 @@ def trade_accept(trade_id):
         return redirect(url_for('game.trade_market'))
 
     # === 자원 교환 실행 ===
-    # [v1.5.1] 에스크로: 발송자 자원은 이미 교역 등록 시 차감됨
-    # → 수락자에게 직접 전달 (발송자 감산 불필요)
-    park.konpeito = min(park.konpeito + trade.offer_konpeito, park.konpeito_cap)
-    park.trash_food = min(park.trash_food + trade.offer_trash, park.trash_food_cap)
-    park.material = min(park.material + trade.offer_material, park.material_cap)
-    park.baby_count += trade.offer_babies
+    # [v1.6.0] 연산 순서 수정: 뺄셈(줄 것)을 먼저, 덧셈(받을 것)을 나중에
+    # → cap에 의한 자원 증발 방지 (이전: 더하기→cap잘림→빼기 = 손해)
 
-    # 수락자 → 발송자 (request)
+    # 1단계: 수락자가 줄 것을 먼저 뺌 (request)
     park.konpeito = max(0, park.konpeito - trade.request_konpeito)
     park.trash_food = max(0, park.trash_food - trade.request_trash)
     park.material = max(0, park.material - trade.request_material)
     park.baby_count = max(0, park.baby_count - trade.request_babies)
 
+    # 2단계: 수락자가 받을 것을 나중에 더함 (offer, 에스크로에서)
+    park.konpeito = min(park.konpeito + trade.offer_konpeito, park.konpeito_cap)
+    park.trash_food = min(park.trash_food + trade.offer_trash, park.trash_food_cap)
+    park.material = min(park.material + trade.offer_material, park.material_cap)
+    park.baby_count += trade.offer_babies
+
+    # 3단계: 발송자에게 수락자가 준 것을 더함
     sender.konpeito = min(sender.konpeito + trade.request_konpeito, sender.konpeito_cap)
     sender.trash_food = min(sender.trash_food + trade.request_trash, sender.trash_food_cap)
     sender.material = min(sender.material + trade.request_material, sender.material_cap)

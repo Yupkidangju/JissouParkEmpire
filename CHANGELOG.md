@@ -9,6 +9,25 @@
 ### 예정됨 (Planned)
 - **Phase 9: 안드로이드 솔플 APK 빌드** (Kivy/BeeWare 기반)
 
+## [1.6.0] - 2026-02-21
+
+### 변경됨 (Changed)
+- **AP 시스템 근본 재설계**: `consume_turn()`을 AP 소비 래퍼로 전환
+  - 이전: 매 행동마다 턴 진행 → AP 무력화(Ghost AP 버그)
+  - 이후: AP 충분하면 AP만 감소, AP 부족 시에만 턴 진행 + AP 리셋
+  - `action_gather/birth/build/train` 내부 중복 AP 체크/소비 제거
+  - 각 라우트에서 `consume_turn(park, ap_cost=N)` 호출로 통일
+
+### 보안 (Security)
+- **원자적 에스크로**: `trade_create`에서 SQL 레벨 `UPDATE-WHERE` 차감
+  - `@validates` 음수 클램핑 역설 근본 차단 (동시 100 요청에도 DB가 1건만 통과)
+  - Python 객체 `db.session.refresh()` 동기화
+
+### 수정됨 (Fixed)
+- **교역 연산 순서 수정**: 뺄셈(줄 것) 먼저 → 덧셈(받을 것) 나중
+  - 이전: 더하기 → cap 잘림 → 빼기 = 자원 증발
+  - 이후: 빼기 → 더하기 → cap 적용 = 정확한 교환
+
 ## [1.5.1] - 2026-02-21
 
 ### 보안 (Security)
